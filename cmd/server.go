@@ -9,7 +9,8 @@ import (
 
 func Server() {
 	mux := http.NewServeMux() // router
-	mux.Handle("GET /product", http.HandlerFunc(database.ProductGet))
+	mux.Handle("GET /products", http.HandlerFunc(database.ProductGet))
+	mux.Handle("GET /products/{id}", http.HandlerFunc(database.GetProductByID))
 	allowedOrigins := []string{"*"}
 	handler := middleware.CORSMiddleware(allowedOrigins)(mux)
 	fmt.Println("server is running on :3000")    //route
