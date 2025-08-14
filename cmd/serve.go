@@ -1,16 +1,17 @@
 package cmd
 
 import (
-	"ecommace/database"
 	"ecommace/middleware"
 	"fmt"
 	"net/http"
 )
 
-func Server() {
-	mux := http.NewServeMux() // router
-	mux.Handle("GET /products", http.HandlerFunc(database.ProductGet))
-	mux.Handle("GET /products/{id}", http.HandlerFunc(database.GetProductByID))
+func Serve() {
+	manager := middleware.NewManager()
+	manager.Use(middleware.Logger)
+
+	mux := http.NewServeMux()
+	InitRoute(mux, manager)
 	allowedOrigins := []string{"*"}
 	handler := middleware.CORSMiddleware(allowedOrigins)(mux)
 	fmt.Println("server is running on :3000")    //route
