@@ -24,9 +24,14 @@ func (mangr *Manager) With(next http.Handler, middlewares ...Middleware) http.Ha
 	for _, middleware := range middlewares {
 		n = middleware(n)
 	}
+	return n
+}
 
-	for _, globalMiddleWare := range mangr.globalMiddleWares {
-		n = globalMiddleWare(n)
+func (mangr *Manager) WrapMux(mux http.Handler) http.Handler {
+	n := mux
+	for _, middleware := range mangr.globalMiddleWares {
+		n = middleware(n)
 	}
+
 	return n
 }

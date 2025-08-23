@@ -8,14 +8,18 @@ import (
 
 func Serve() {
 	manager := middleware.NewManager()
-	manager.Use(middleware.Logger)
+
+	manager.Use(
+		middleware.CORSMiddleware,
+		middleware.Preflight,
+		middleware.Logger,
+	)
 
 	mux := http.NewServeMux()
+	warpedMux := manager.WrapMux(mux)
 	InitRoute(mux, manager)
-	allowedOrigins := []string{"*"}
-	handler := middleware.CORSMiddleware(allowedOrigins)(mux)
-	fmt.Println("server is running on :3000")    //route
-	err := http.ListenAndServe(":3000", handler) // expose port
+	fmt.Println("server is running on :3000")      //route
+	err := http.ListenAndServe(":3000", warpedMux) // expose port
 
 	if err != nil {
 		fmt.Println("error", err) // error
