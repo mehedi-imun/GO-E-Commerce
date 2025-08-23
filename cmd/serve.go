@@ -8,10 +8,9 @@ import (
 
 func Serve() {
 	manager := middleware.NewManager()
-
 	manager.Use(
-		middleware.CORSMiddleware,
 		middleware.Preflight,
+		middleware.CORSMiddleware,
 		middleware.Logger,
 	)
 
