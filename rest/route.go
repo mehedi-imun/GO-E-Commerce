@@ -1,8 +1,8 @@
-package cmd
+package rest
 
 import (
 	"ecommace/database"
-	"ecommace/middleware"
+	"ecommace/rest/middleware"
 	"net/http"
 )
 
