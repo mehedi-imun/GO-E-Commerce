@@ -3,11 +3,14 @@ package cmd
 import (
 	"ecommace/config"
 	"ecommace/rest"
+	"ecommace/rest/handlers/product"
 )
 
 func Serve() {
 
 	cnf := config.GetConfig()
-	rest.Start(cnf)
+	productHandler:= product.NewHandler()
+	server:= rest.NewServer(productHandler)
+	server.Start(cnf)
 
 }
