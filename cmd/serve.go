@@ -9,8 +9,8 @@ import (
 func Serve() {
 
 	cnf := config.GetConfig()
-	productHandler:= product.NewHandler()
-	server:= rest.NewServer(productHandler)
-	server.Start(cnf)
+	productHandler := product.NewHandler()
+	server := rest.NewServer(cnf, productHandler)
+	server.Start()
 
 }

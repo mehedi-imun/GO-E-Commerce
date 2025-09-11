@@ -11,15 +11,19 @@ import (
 
 type Server struct {
 	productHandler *product.Handler
+	cnf            config.Config
 }
 
-func NewServer(productHandler *product.Handler) *Server {
+func NewServer(cnf config.Config,
+	productHandler *product.Handler,
+) *Server {
 	return &Server{
+		cnf:            cnf,
 		productHandler: productHandler,
 	}
 }
 
-func (server *Server) Start(cnf config.Config) {
+func (server *Server) Start() {
 
 	manager := middleware.NewManager()
 	manager.Use(
@@ -31,10 +35,9 @@ func (server *Server) Start(cnf config.Config) {
 	mux := http.NewServeMux()
 	warpedMux := manager.WrapMux(mux)
 
-	server.productHandler.Product_Route(mux,manager)
+	server.productHandler.Product_Route(mux, manager)
 
-	
-	addr := ":" + strconv.Itoa(cnf.HttpPort)
+	addr := ":" + strconv.Itoa(server.cnf.HttpPort)
 	fmt.Println("server is running on", addr)   //route
 	err := http.ListenAndServe(addr, warpedMux) // expose port
 
