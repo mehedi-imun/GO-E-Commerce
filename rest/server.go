@@ -1,30 +1,38 @@
 package rest
 
 import (
-	"ecommace/config"
-	"ecommace/rest/handlers/product"
-	"ecommace/rest/middleware"
 	"fmt"
 	"net/http"
 	"strconv"
+
+	"ecommace/config"
+
+	"ecommace/rest/handlers/user"
+	"ecommace/rest/middleware"
 )
 
+// Server holds dependencies
 type Server struct {
-	productHandler *product.Handler
-	cnf            config.Config
+	userHandler *user.Handler
+	cnf         *config.Config
 }
 
-func NewServer(cnf config.Config,
-	productHandler *product.Handler,
+// NewServer creates a server with injected handlers and config
+func NewServer(
+	cnf *config.Config,
+
+	userHandler *user.Handler,
 ) *Server {
 	return &Server{
-		cnf:            cnf,
-		productHandler: productHandler,
+		cnf: cnf,
+
+		userHandler: userHandler,
 	}
 }
 
-func (server *Server) Start() {
-
+// Start runs the HTTP server
+func (s *Server) Start() {
+	// 1️⃣ Create middleware manager
 	manager := middleware.NewManager()
 	manager.Use(
 		middleware.Preflight,
@@ -32,16 +40,20 @@ func (server *Server) Start() {
 		middleware.Logger,
 	)
 
+	// 2️⃣ Create HTTP mux
 	mux := http.NewServeMux()
-	warpedMux := manager.WrapMux(mux)
 
-	server.productHandler.Product_Route(mux, manager)
+	if s.userHandler != nil {
+		s.userHandler.User_Route(mux, manager)
+	}
 
-	addr := ":" + strconv.Itoa(server.cnf.HttpPort)
-	fmt.Println("server is running on", addr)   //route
-	err := http.ListenAndServe(addr, warpedMux) // expose port
+	// 4️⃣ Wrap mux with global middleware
+	wrappedMux := manager.WrapMux(mux)
 
-	if err != nil {
-		fmt.Println("error", err) // error
+	// 5️⃣ Start server
+	addr := ":" + strconv.Itoa(s.cnf.HttpPort)
+	fmt.Println("Server is running on", addr)
+	if err := http.ListenAndServe(addr, wrappedMux); err != nil {
+		fmt.Println("Server error:", err)
 	}
 }

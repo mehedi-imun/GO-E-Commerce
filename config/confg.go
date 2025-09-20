@@ -8,48 +8,34 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var configurations Config
-
 type Config struct {
 	Version     string
 	ServiceName string
 	HttpPort    int
 }
 
-func loadConfig() {
+func LoadConfig() (*Config, error) {
 	err := godotenv.Load()
 	if err != nil {
-		fmt.Println("faied to load env")
-		os.Exit(1)
+		return nil, fmt.Errorf("failed to load env: %w", err)
 	}
+
 	version := os.Getenv("VERSION")
-	if version == "" {
-		fmt.Println("faied to load version")
-		os.Exit(1)
-	}
 	serviceName := os.Getenv("SERVICE_NAME")
-	if serviceName == "" {
-		fmt.Println("faied to load serviceName")
-		os.Exit(1)
+	httpPortStr := os.Getenv("HTTP_PORT")
+
+	if version == "" || serviceName == "" || httpPortStr == "" {
+		return nil, fmt.Errorf("missing required env variables")
 	}
-	httpPort := os.Getenv("HTTP_PORT")
-	if httpPort == "" {
-		fmt.Println("faied to load httpPort")
-		os.Exit(1)
-	}
-	httpPortInt, err := strconv.Atoi(httpPort)
+
+	httpPort, err := strconv.Atoi(httpPortStr)
 	if err != nil {
-		fmt.Println("failed to convert httpPort to int")
-		os.Exit(1)
+		return nil, fmt.Errorf("invalid HTTP_PORT: %w", err)
 	}
-	configurations = Config{
+
+	return &Config{
 		Version:     version,
 		ServiceName: serviceName,
-		HttpPort:    httpPortInt,
-	}
-}
-
-func GetConfig() Config {
-	loadConfig()
-	return configurations
+		HttpPort:    httpPort,
+	}, nil
 }

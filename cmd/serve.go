@@ -1,16 +1,50 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+
 	"ecommace/config"
+	"ecommace/infra/db"
+	"ecommace/repo"
 	"ecommace/rest"
-	"ecommace/rest/handlers/product"
+	"ecommace/rest/handlers/user"
+	"ecommace/rest/middleware"
 )
 
 func Serve() {
+	// 1️⃣ Load configuration
+	cnf, err := config.LoadConfig()
+	if err != nil {
+		fmt.Println("Config load error:", err)
+		os.Exit(1)
+	}
 
-	cnf := config.GetConfig()
-	productHandler := product.NewHandler()
-	server := rest.NewServer(cnf, productHandler)
+	// 2️⃣ Connect to the database
+	dbCon, err := db.NewConnection()
+	if err != nil {
+		fmt.Println("DB connection error:", err)
+		os.Exit(1)
+	}
+
+	// 3️⃣ Initialize repository
+	userRepo := repo.NewUserRepo(dbCon)
+
+	// 4️⃣ Initialize middleware manager
+	mws := middleware.NewManager()
+	mws.Use(
+		middleware.Preflight,
+		middleware.CORSMiddleware,
+		middleware.Logger,
+	)
+
+	// 5️⃣ Initialize handler
+	userHandler := user.NewHandler(mws, userRepo, cnf)
+
+	// 6️⃣ Create server with config + handler
+	server := rest.NewServer(cnf, userHandler) // nil for productHandler if not needed
+
+	// 7️⃣ Start server
+	fmt.Println("Starting server on port:", cnf.HttpPort)
 	server.Start()
-
 }
