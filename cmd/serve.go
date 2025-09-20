@@ -14,11 +14,7 @@ import (
 
 func Serve() {
 	// 1️⃣ Load configuration
-	cnf, err := config.LoadConfig()
-	if err != nil {
-		fmt.Println("Config load error:", err)
-		os.Exit(1)
-	}
+	cnf := config.GetConfig()
 
 	// 2️⃣ Connect to the database
 	dbCon, err := db.NewConnection()

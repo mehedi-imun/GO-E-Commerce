@@ -18,6 +18,7 @@ type User struct {
 type UserRepo interface {
 	Create(user User) (*User, error)
 	Find(email, pass string) (*User, error)
+	GetAll() ([]User, error)  // <-- new
 }
 
 type userRepo struct {
@@ -68,4 +69,15 @@ func (r *userRepo) Find(email, pass string) (*User, error) {
 	}
 
 	return &u, nil
+}
+
+
+func (r *userRepo) GetAll() ([]User, error) {
+	var users []User
+	query := `SELECT id, first_name, last_name, email, password, is_shop_owner FROM users`
+	err := r.db.Select(&users, query)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }

@@ -20,12 +20,10 @@ type Server struct {
 // NewServer creates a server with injected handlers and config
 func NewServer(
 	cnf *config.Config,
-
 	userHandler *user.Handler,
 ) *Server {
 	return &Server{
 		cnf: cnf,
-
 		userHandler: userHandler,
 	}
 }

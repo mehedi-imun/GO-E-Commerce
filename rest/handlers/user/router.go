@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"ecommace/config"
-	"ecommace/rest/middleware"
 	"ecommace/repo"
+	"ecommace/rest/middleware"
 )
 
 type Handler struct {
@@ -24,6 +24,20 @@ func NewHandler(mws *middleware.Manager, repo repo.UserRepo, cnf *config.Config)
 
 // User_Route registers all user routes
 func (h *Handler) User_Route(mux *http.ServeMux, manager *middleware.Manager) {
-	mux.Handle("/users/create", manager.With(http.HandlerFunc(h.CreateUser)))
-	mux.Handle("/users/login", manager.With(http.HandlerFunc(h.LoginUser)))
+	mux.Handle(
+		"POST /users",
+		manager.With(
+			http.HandlerFunc(h.CreateUser),
+		))
+	mux.Handle(
+		"POST /login",
+		manager.With(
+			http.HandlerFunc(h.LoginUser),
+		))
+	mux.Handle(
+		"GET /users",
+		manager.With(
+			http.HandlerFunc(h.GetAllUsers),
+		))
+
 }
