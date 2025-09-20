@@ -18,7 +18,7 @@ type User struct {
 type UserRepo interface {
 	Create(user User) (*User, error)
 	Find(email, pass string) (*User, error)
-	GetAll() ([]User, error)  // <-- new
+	GetAll() ([]*User, error)
 }
 
 type userRepo struct {
@@ -33,24 +33,29 @@ func NewUserRepo(db *sqlx.DB) UserRepo {
 // Create inserts a new user and returns it
 func (r *userRepo) Create(user User) (*User, error) {
 	query := `
-		INSERT INTO users (first_name, last_name, email, password, is_shop_owner)
-		VALUES (:first_name, :last_name, :email, :password, :is_shop_owner)
+		INSERT INTO users (
+		first_name, 
+		last_name, 
+		email, 
+		password, 
+		is_shop_owner
+		)VALUES (
+		$1, 
+		$2, 
+		$3, 
+		$4, 
+		$5
+		)
 		RETURNING id
 	`
 
 	// Use NamedQueryRow for struct binding and returning id
-	stmt, err := r.db.PrepareNamed(query)
+	row := r.db.QueryRow(query, user.FirstName, user.FirstName, user.Email, user.Password, user.IsShopOwner)
+	err := row.Scan(&user.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to prepare query: %w", err)
 	}
-	defer stmt.Close()
 
-	var id int
-	if err := stmt.Get(&id, user); err != nil {
-		return nil, fmt.Errorf("failed to insert user: %w", err)
-	}
-
-	user.ID = id
 	return &user, nil
 }
 
@@ -71,9 +76,8 @@ func (r *userRepo) Find(email, pass string) (*User, error) {
 	return &u, nil
 }
 
-
-func (r *userRepo) GetAll() ([]User, error) {
-	var users []User
+func (r *userRepo) GetAll() ([]*User, error) {
+	var users []*User
 	query := `SELECT id, first_name, last_name, email, password, is_shop_owner FROM users`
 	err := r.db.Select(&users, query)
 	if err != nil {

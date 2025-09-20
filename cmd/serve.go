@@ -17,7 +17,7 @@ func Serve() {
 	cnf := config.GetConfig()
 
 	// 2️⃣ Connect to the database
-	dbCon, err := db.NewConnection()
+	dbCon, err := db.NewConnection(cnf.DB)
 	if err != nil {
 		fmt.Println("DB connection error:", err)
 		os.Exit(1)

@@ -8,46 +8,72 @@ import (
 	"github.com/joho/godotenv"
 )
 
-
 // singleton design pattern
 var configurations *Config
+
+type DBConfig struct {
+	Host          string
+	Port          int
+	Name          string
+	User          string
+	Password      string
+	EnableSSLMode bool
+}
 
 type Config struct {
 	Version     string
 	ServiceName string
 	HttpPort    int
+	DB          *DBConfig
+}
+
+func mustGet(key string) string {
+	val := os.Getenv(key)
+	if val == "" {
+		fmt.Printf("❌ missing required env var: %s\n", key)
+		os.Exit(1)
+	}
+	return val
+}
+
+func mustGetInt(key string) int {
+	valStr := mustGet(key)
+	val, err := strconv.Atoi(valStr)
+	if err != nil {
+		fmt.Printf("❌ failed to convert %s to int\n", key)
+		os.Exit(1)
+	}
+	return val
+}
+
+func mustGetBool(key string) bool {
+	valStr := mustGet(key)
+	val, err := strconv.ParseBool(valStr)
+	if err != nil {
+		fmt.Printf("❌ failed to convert %s to bool\n", key)
+		os.Exit(1)
+	}
+	return val
 }
 
 func loadConfig() {
-	err := godotenv.Load()
-	if err != nil {
-		fmt.Println("faied to load env")
-		os.Exit(1)
+	// .env load
+	_ = godotenv.Load()
+
+	dbConfig := &DBConfig{
+		Host:          mustGet("DB_HOST"),
+		Port:          mustGetInt("DB_PORT"),
+		Name:          mustGet("DB_NAME"),
+		User:          mustGet("DB_USER"),
+		Password:      mustGet("DB_PASSWORD"),
+		EnableSSLMode: mustGetBool("DB_ENABLE_SSL_MODE"),
 	}
-	version := os.Getenv("VERSION")
-	if version == "" {
-		fmt.Println("faied to load version")
-		os.Exit(1)
-	}
-	serviceName := os.Getenv("SERVICE_NAME")
-	if serviceName == "" {
-		fmt.Println("faied to load serviceName")
-		os.Exit(1)
-	}
-	httpPort := os.Getenv("HTTP_PORT")
-	if httpPort == "" {
-		fmt.Println("faied to load httpPort")
-		os.Exit(1)
-	}
-	httpPortInt, err := strconv.Atoi(httpPort)
-	if err != nil {
-		fmt.Println("failed to convert httpPort to int")
-		os.Exit(1)
-	}
+
 	configurations = &Config{
-		Version:     version,
-		ServiceName: serviceName,
-		HttpPort:    httpPortInt,
+		Version:     mustGet("VERSION"),
+		ServiceName: mustGet("SERVICE_NAME"),
+		HttpPort:    mustGetInt("HTTP_PORT"),
+		DB:          dbConfig,
 	}
 }
 
@@ -55,6 +81,5 @@ func GetConfig() *Config {
 	if configurations == nil {
 		loadConfig()
 	}
-
 	return configurations
 }
