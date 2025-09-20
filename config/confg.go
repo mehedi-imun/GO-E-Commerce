@@ -8,6 +8,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+
+// singleton design pattern
 var configurations *Config
 
 type Config struct {
