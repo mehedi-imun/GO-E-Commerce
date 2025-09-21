@@ -7,7 +7,7 @@ import (
 
 // GetAllUsers handles GET /users
 func (h *Handler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
-	users, err := h.repo.GetAll()
+	users, err := h.service.GetAll()
 	if err != nil {
 		http.Error(w, "Failed to fetch users", http.StatusInternalServerError)
 		return

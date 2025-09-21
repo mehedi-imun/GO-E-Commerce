@@ -21,7 +21,7 @@ func (h *Handler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.repo.Find(creds.Email, creds.Password)
+	user, err := h.service.Find(creds.Email, creds.Password)
 	if err != nil {
 		http.Error(w, "login failed: "+err.Error(), http.StatusUnauthorized)
 		return

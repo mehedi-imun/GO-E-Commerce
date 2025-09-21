@@ -1,6 +1,8 @@
 package repo
 
 import (
+	"ecommace/domain"
+	"ecommace/user"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
@@ -16,9 +18,7 @@ type User struct {
 }
 
 type UserRepo interface {
-	Create(user User) (*User, error)
-	Find(email, pass string) (*User, error)
-	GetAll() ([]*User, error)
+	user.UserRepo
 }
 
 type userRepo struct {
@@ -27,11 +27,13 @@ type userRepo struct {
 
 // Constructor
 func NewUserRepo(db *sqlx.DB) UserRepo {
-	return &userRepo{db: db}
+	return &userRepo{
+		db: db,
+	}
 }
 
 // Create inserts a new user and returns it
-func (r *userRepo) Create(user User) (*User, error) {
+func (r *userRepo) Create(user domain.User) (*domain.User, error) {
 	query := `
 		INSERT INTO users (
 		first_name, 
@@ -60,8 +62,8 @@ func (r *userRepo) Create(user User) (*User, error) {
 }
 
 // Find retrieves a user by email and password
-func (r *userRepo) Find(email, pass string) (*User, error) {
-	var u User
+func (r *userRepo) Find(email, pass string) (*domain.User, error) {
+	var u domain.User
 	query := `
 		SELECT id, first_name, last_name, email, password, is_shop_owner
 		FROM users
@@ -76,8 +78,8 @@ func (r *userRepo) Find(email, pass string) (*User, error) {
 	return &u, nil
 }
 
-func (r *userRepo) GetAll() ([]*User, error) {
-	var users []*User
+func (r *userRepo) GetAll() ([]*domain.User, error) {
+	var users []*domain.User
 	query := `SELECT id, first_name, last_name, email, password, is_shop_owner FROM users`
 	err := r.db.Select(&users, query)
 	if err != nil {
