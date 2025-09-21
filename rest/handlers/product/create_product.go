@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"net/http"
 
-	"ecommace/repo"
+	"ecommace/domain"
 )
 
 // CreateProduct handles POST /products
 func (h *Handler) CreateProduct(w http.ResponseWriter, r *http.Request) {
-	var p repo.Product
+	var p domain.Product
 
 	// decode request body
 	if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
@@ -18,7 +18,7 @@ func (h *Handler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	created, err := h.repo.Create(p)
+	created, err := h.service.Create(p)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to create product: %v", err), http.StatusInternalServerError)
 		return

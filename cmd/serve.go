@@ -6,12 +6,13 @@ import (
 
 	"ecommace/config"
 	"ecommace/infra/db"
+	"ecommace/product"
 	"ecommace/repo"
 	"ecommace/rest"
 	productHandler "ecommace/rest/handlers/product"
-	"ecommace/user"
 	userHandler "ecommace/rest/handlers/user"
 	"ecommace/rest/middleware"
+	"ecommace/user"
 )
 
 func Serve() {
@@ -34,7 +35,8 @@ func Serve() {
 
 	// domain
 
-	usrService:=user.NewService(userRepo)
+	usrService := user.NewService(userRepo)
+	productService:= product.NewService(productRepo)
 
 	// 4️⃣ Initialize middleware manager
 	mws := middleware.NewManager()
@@ -46,7 +48,7 @@ func Serve() {
 
 	// 5️⃣ Initialize handlers
 	userHandler := userHandler.NewHandler(cnf, usrService)
-	productHandler := productHandler.NewHandler(mws, productRepo, cnf)
+	productHandler := productHandler.NewHandler(productService, cnf)
 
 	// 6️⃣ Create server with config + handlers
 	server := rest.NewServer(cnf, userHandler, productHandler)
