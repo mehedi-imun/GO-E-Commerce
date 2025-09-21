@@ -38,3 +38,21 @@ func NewConnection(cnf *config.DBConfig) (*sqlx.DB, error) {
 
 
 }
+
+
+func GetMigrationDBURL(cnf *config.DBConfig) string {
+	sslMode := "disable"
+	if cnf.EnableSSLMode {
+		sslMode = "enable"
+	}
+
+	return fmt.Sprintf(
+		"postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		cnf.User,
+		cnf.Password,
+		cnf.Host,
+		cnf.Port,
+		cnf.Name,
+		sslMode,
+	)
+}

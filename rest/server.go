@@ -3,28 +3,32 @@ package rest
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	"ecommace/config"
-
+	"ecommace/rest/handlers/product"
 	"ecommace/rest/handlers/user"
 	"ecommace/rest/middleware"
 )
 
 // Server holds dependencies
 type Server struct {
-	userHandler *user.Handler
-	cnf         *config.Config
+	cnf            *config.Config
+	userHandler    *user.Handler
+	productHandler *product.Handler
 }
 
 // NewServer creates a server with injected handlers and config
 func NewServer(
 	cnf *config.Config,
 	userHandler *user.Handler,
+	productHandler *product.Handler,
 ) *Server {
 	return &Server{
-		cnf: cnf,
-		userHandler: userHandler,
+		cnf:            cnf,
+		userHandler:    userHandler,
+		productHandler: productHandler,
 	}
 }
 
@@ -41,8 +45,12 @@ func (s *Server) Start() {
 	// 2️⃣ Create HTTP mux
 	mux := http.NewServeMux()
 
+	// 3️⃣ Register routes
 	if s.userHandler != nil {
 		s.userHandler.User_Route(mux, manager)
+	}
+	if s.productHandler != nil {
+		s.productHandler.Product_Route(mux, manager)
 	}
 
 	// 4️⃣ Wrap mux with global middleware
@@ -50,8 +58,10 @@ func (s *Server) Start() {
 
 	// 5️⃣ Start server
 	addr := ":" + strconv.Itoa(s.cnf.HttpPort)
-	fmt.Println("Server is running on", addr)
+	fmt.Printf("✅ Server running at http://%s\n", addr)
+
 	if err := http.ListenAndServe(addr, wrappedMux); err != nil {
-		fmt.Println("Server error:", err)
+		fmt.Println("❌ Server error:", err)
+		os.Exit(1)
 	}
 }

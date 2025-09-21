@@ -8,6 +8,7 @@ import (
 	"ecommace/infra/db"
 	"ecommace/repo"
 	"ecommace/rest"
+	"ecommace/rest/handlers/product"
 	"ecommace/rest/handlers/user"
 	"ecommace/rest/middleware"
 )
@@ -19,12 +20,16 @@ func Serve() {
 	// 2️⃣ Connect to the database
 	dbCon, err := db.NewConnection(cnf.DB)
 	if err != nil {
-		fmt.Println("DB connection error:", err)
+		fmt.Println("❌ DB connection error:", err)
 		os.Exit(1)
 	}
+	// Run migrations
+	dbURL := db.GetMigrationDBURL(cnf.DB)
+	db.RunMigrations(dbURL)
 
-	// 3️⃣ Initialize repository
+	// 3️⃣ Initialize repositories
 	userRepo := repo.NewUserRepo(dbCon)
+	productRepo := repo.NewProductRepo(dbCon)
 
 	// 4️⃣ Initialize middleware manager
 	mws := middleware.NewManager()
@@ -34,13 +39,14 @@ func Serve() {
 		middleware.Logger,
 	)
 
-	// 5️⃣ Initialize handler
+	// 5️⃣ Initialize handlers
 	userHandler := user.NewHandler(mws, userRepo, cnf)
+	productHandler := product.NewHandler(mws, productRepo, cnf)
 
-	// 6️⃣ Create server with config + handler
-	server := rest.NewServer(cnf, userHandler) // nil for productHandler if not needed
+	// 6️⃣ Create server with config + handlers
+	server := rest.NewServer(cnf, userHandler, productHandler)
 
 	// 7️⃣ Start server
-	fmt.Println("Starting server on port:", cnf.HttpPort)
+	fmt.Println("🚀 Starting server on port:", cnf.HttpPort)
 	server.Start()
 }
