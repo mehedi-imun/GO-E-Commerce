@@ -11,5 +11,6 @@ type Service interface {
 type ProductRepo interface {
 	Create(product domain.Product) (*domain.Product, error)
 	FindByID(id int) (*domain.Product, error)
-	GetAll() ([]*domain.Product, error)
+	GetAll(page, limit int64) ([]*domain.Product, error)
+	Count() (int64, error)
 }

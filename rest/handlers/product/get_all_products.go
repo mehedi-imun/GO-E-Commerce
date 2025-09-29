@@ -20,11 +20,17 @@ func (h *Handler) GetAllProducts(w http.ResponseWriter, r *http.Request) {
 		page = 1
 	}
 
-	products, err := h.service.GetAll()
+	products, err := h.service.GetAll(page, limit)
 	if err != nil {
 		http.Error(w, "Failed to fetch products", http.StatusInternalServerError)
 		return
 	}
 
-	util.SendPage(w, products, limit, page, 0)
+	dataCount, err := h.service.Count()
+	if err != nil {
+		http.Error(w, "Failed to fetch products", http.StatusInternalServerError)
+		return
+	}
+
+	util.SendPage(w, products, limit, page, dataCount)
 }

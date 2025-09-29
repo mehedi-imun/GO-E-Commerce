@@ -58,11 +58,12 @@ func (r *productRepo) FindByID(id int) (*domain.Product, error) {
 }
 
 // Get all products
-func (r *productRepo) GetAll() ([]*domain.Product, error) {
+func (r *productRepo) GetAll(page, limit int64) ([]*domain.Product, error) {
+	offset := ((page - 1) * limit) + 1
 	var products []*domain.Product
-	query := `SELECT id, name, description, price, stock FROM products`
+	query := `SELECT id, name, description, price, stock FROM products LIMIT $1 OFFSET $2`
 
-	err := r.db.Select(&products, query)
+	err := r.db.Select(&products, query, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get products: %w", err)
 	}
@@ -88,4 +89,15 @@ func (r *productRepo) Delete(id int) error {
 		return fmt.Errorf("failed to delete product: %w", err)
 	}
 	return nil
+}
+
+func (r *productRepo) Count() (int64, error) {
+	query := `SELECT COUNT(*) from products`
+	var count int64
+
+	err := r.db.QueryRow(query).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("failed to delete product: %w", err)
+	}
+	return count, nil
 }

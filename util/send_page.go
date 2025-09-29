@@ -20,13 +20,13 @@ func SendPage(w http.ResponseWriter, data any, limit int64, page int64, totalIte
 		totalPages++
 	}
 	resp := PaginatedData{
-		Data: data,
 		Pagination: Pagination{
 			Limit:      limit,
 			Page:       page,
 			TotalItems: totalItems,
 			TotalPages: totalPages,
 		},
+		Data: data,
 	}
 
 	SendData(w, http.StatusOK, resp)

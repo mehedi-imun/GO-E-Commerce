@@ -36,8 +36,8 @@ func (service *service) FindByID(id int) (*domain.Product, error) {
 
 	return p, nil
 }
-func (service *service) GetAll() ([]*domain.Product, error) {
-	p, err := service.productRepo.GetAll()
+func (service *service) GetAll(page, limit int64) ([]*domain.Product, error) {
+	p, err := service.productRepo.GetAll(page, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,11 @@ func (service *service) GetAll() ([]*domain.Product, error) {
 	return p, nil
 }
 
+func (service *service) Count() (int64, error) {
+	p, err := service.productRepo.Count()
+	if err != nil {
+		return 0, err
+	}
 
-
-
-
+	return p, nil
+}
