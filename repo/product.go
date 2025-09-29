@@ -1,26 +1,15 @@
 package repo
 
 import (
+	"ecommace/domain"
+	"ecommace/product"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
 
-type Product struct {
-	ID          int     `db:"id" json:"id"`
-	Name        string  `db:"name" json:"name"`
-	Description string  `db:"description" json:"description"`
-	Price       float64 `db:"price" json:"price"`
-	Stock       int     `db:"stock" json:"stock"`
-	Image_Url   string  `db:"description" json:"Image_Url"`
-}
-
 type ProductRepo interface {
-	Create(product Product) (*Product, error)
-	FindByID(id int) (*Product, error)
-	GetAll() ([]*Product, error)
-	UpdateStock(id, stock int) error
-	Delete(id int) error
+	product.ProductRepo
 }
 
 type productRepo struct {
@@ -33,10 +22,10 @@ func NewProductRepo(db *sqlx.DB) ProductRepo {
 }
 
 // Create product
-func (r *productRepo) Create(product Product) (*Product, error) {
+func (r *productRepo) Create(product domain.Product) (*domain.Product, error) {
 	query := `
-		INSERT INTO products (name, description, price, stock)
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO products (name, description, price, stock, Image_Url)
+		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id
 	`
 	err := r.db.QueryRow(
@@ -45,6 +34,7 @@ func (r *productRepo) Create(product Product) (*Product, error) {
 		product.Description,
 		product.Price,
 		product.Stock,
+		product.Image_Url,
 	).Scan(&product.ID)
 
 	if err != nil {
@@ -55,8 +45,8 @@ func (r *productRepo) Create(product Product) (*Product, error) {
 }
 
 // Find product by ID
-func (r *productRepo) FindByID(id int) (*Product, error) {
-	var p Product
+func (r *productRepo) FindByID(id int) (*domain.Product, error) {
+	var p domain.Product
 	query := `SELECT id, name, description, price, stock FROM products WHERE id=$1`
 
 	err := r.db.Get(&p, query, id)
@@ -68,8 +58,8 @@ func (r *productRepo) FindByID(id int) (*Product, error) {
 }
 
 // Get all products
-func (r *productRepo) GetAll() ([]*Product, error) {
-	var products []*Product
+func (r *productRepo) GetAll() ([]*domain.Product, error) {
+	var products []*domain.Product
 	query := `SELECT id, name, description, price, stock FROM products`
 
 	err := r.db.Select(&products, query)

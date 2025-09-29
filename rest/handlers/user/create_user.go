@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"ecommace/repo"
+	"ecommace/domain"
 )
 
 func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -13,13 +13,13 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user repo.User
+	var user domain.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	createdUser, err := h.repo.Create(user)
+	createdUser, err := h.service.Create(user)
 	if err != nil {
 		http.Error(w, "failed to create user: "+err.Error(), http.StatusInternalServerError)
 		return

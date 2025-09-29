@@ -22,7 +22,7 @@ func (h *Handler) GetProductByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product, err := h.repo.FindByID(id)
+	product, err := h.service.FindByID(id)
 	if err != nil {
 		http.Error(w, "Product not found", http.StatusNotFound)
 		return
