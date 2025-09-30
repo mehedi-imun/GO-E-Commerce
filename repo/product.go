@@ -92,7 +92,22 @@ func (r *productRepo) Delete(id int) error {
 }
 
 func (r *productRepo) Count() (int64, error) {
-	query := `SELECT COUNT(*) from products`
+	// query := `SELECT COUNT(*) from products`
+	query := `
+WITH heavy AS (
+    SELECT md5(
+             md5(
+               repeat(
+                 md5(id::text || name || description || price::text || created_at::text),
+                 500
+               )
+             )
+           ) AS h
+    FROM products
+)
+SELECT COUNT(h) FROM heavy;
+`
+
 	var count int64
 
 	err := r.db.QueryRow(query).Scan(&count)
